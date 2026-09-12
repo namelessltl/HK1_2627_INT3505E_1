@@ -40,6 +40,10 @@ def create_students():
         "gpa": body.get("gpa", 0.0),
     }
     STUDENTS.append(student)
-    return jsonify(student), 201
+    response = jsonify(student)
+    response.status_code = 201
+    response.headers["Location"] = f"/students/{student['id']}"
+    return response
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
