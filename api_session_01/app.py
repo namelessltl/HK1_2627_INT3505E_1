@@ -51,6 +51,7 @@
 from flask import Flask, jsonify, request
 app = Flask(__name__)
 BOOKS = [
+    {"id": "z2a3b4", "title": "bro jump", "price": 150, "item_id" : 20},
     {"id": "1a2b3c", "title": "trust me bro", "price": 200, "item_id" : 1},
     {"id": "c2b31a", "title": "atomic bro", "price": 300, "item_id" : 2},
     {"id": "cccmmb", "title": "Top 100 anime op", "price": 100, "item_id" : 3},
@@ -70,7 +71,7 @@ BOOKS = [
     {"id": "q3r4s5", "title": "Kinh Dịch Lược Giải", "price": 260, "item_id" : 17},
     {"id": "t6u7v8", "title": "Software Design Patterns for bro", "price": 330, "item_id" : 18},
     {"id": "w9x0y1", "title": "Dijkstra's Path", "price": 190, "item_id" : 19},
-    {"id": "z2a3b4", "title": "bro jump", "price": 150, "item_id" : 20},
+    
 ]
 
 def find_by_id(book_id):
@@ -105,7 +106,12 @@ def get_item(item_id):
 def list_books():
     limit = int(request.args.get("limit", 20))
     q = request.args.get("q","").strip().lower()
+    sort = request.args.get("s", "").strip().lower()
     items = [b for b in BOOKS if q in b["title"].lower()]
+    if sort == "item_id":
+        items = sorted(items, key=lambda x: x["item_id"])
+    elif sort== "-item_id":
+        items = sorted(items, key=lambda x: x["item_id"], reverse=True)
     items = items[:limit]
     return jsonify({"items": items}), 200
 if __name__ == "__main__":
