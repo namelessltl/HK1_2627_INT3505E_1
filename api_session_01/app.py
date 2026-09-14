@@ -119,38 +119,285 @@
 # if __name__ == "__main__":
 #     app.run(host="127.0.0.1", port=5000, debug=True)
 
-from flask import Flask,jsonify
-ORDERS = {
-    "ORD001": {"guest_name": "Nguyen Van A", "status": "pending", "time": "2026-09-14 08:00", "money": 150000},
-    "ORD002": {"guest_name": "Tran Thi B", "status": "shipped", "time": "2026-09-13 14:30", "money": 250000},
-    "ORD003": {"guest_name": "Le Van C", "status": "delivered", "time": "2026-09-12 10:15", "money": 320000},
-    "ORD004": {"guest_name": "Pham Thi D", "status": "processing", "time": "2026-09-14 09:45", "money": 120000},
-    "ORD005": {"guest_name": "Hoang Van E", "status": "pending", "time": "2026-09-14 11:20", "money": 450000},
-    "ORD006": {"guest_name": "Vu Thi F", "status": "shipped", "time": "2026-09-13 09:00", "money": 50000},
-    "ORD007": {"guest_name": "Ngo Van G", "status": "delivered", "time": "2026-09-11 16:20", "money": 780000},
-    "ORD008": {"guest_name": "Do Thi H", "status": "pending", "time": "2026-09-14 12:00", "money": 210000},
-    "ORD009": {"guest_name": "Bui Van I", "status": "processing", "time": "2026-09-14 07:10", "money": 340000},
-    "ORD010": {"guest_name": "Dang Thi K", "status": "shipped", "time": "2026-09-13 10:30", "money": 890000},
-    "ORD011": {"guest_name": "Ton Van L", "status": "pending", "time": "2026-09-14 12:30", "money": 115000},
-    "ORD012": {"guest_name": "Phan Thi M", "status": "delivered", "time": "2026-09-09 14:00", "money": 400000},
-    "ORD013": {"guest_name": "Ly Van N", "status": "processing", "time": "2026-09-14 09:45", "money": 280000},
-    "ORD014": {"guest_name": "Dao Thi O", "status": "shipped", "time": "2026-09-12 11:15", "money": 600000},
-    "ORD015": {"guest_name": "Truong Van P", "status": "pending", "time": "2026-09-14 12:40", "money": 225000},
-    "ORD016": {"guest_name": "Trinh Thi Q", "status": "delivered", "time": "2026-09-08 08:00", "money": 150000},
-    "ORD017": {"guest_name": "Mai Van R", "status": "processing", "time": "2026-09-14 10:05", "money": 199000},
-    "ORD018": {"guest_name": "Dinh Thi S", "status": "shipped", "time": "2026-09-13 16:50", "money": 275000},
-    "ORD019": {"guest_name": "Phung Van T", "status": "pending", "time": "2026-09-14 12:45", "money": 310000},
-    "ORD020": {"guest_name": "Chau Thi U", "status": "delivered", "time": "2026-09-07 19:30", "money": 550000}
-}
+# from flask import Flask,jsonify
+# ORDERS = {
+#     "ORD001": {"guest_name": "Nguyen Van A", "status": "pending", "time": "2026-09-14 08:00", "money": 150000},
+#     "ORD002": {"guest_name": "Tran Thi B", "status": "shipped", "time": "2026-09-13 14:30", "money": 250000},
+#     "ORD003": {"guest_name": "Le Van C", "status": "delivered", "time": "2026-09-12 10:15", "money": 320000},
+#     "ORD004": {"guest_name": "Pham Thi D", "status": "processing", "time": "2026-09-14 09:45", "money": 120000},
+#     "ORD005": {"guest_name": "Hoang Van E", "status": "pending", "time": "2026-09-14 11:20", "money": 450000},
+#     "ORD006": {"guest_name": "Vu Thi F", "status": "shipped", "time": "2026-09-13 09:00", "money": 50000},
+#     "ORD007": {"guest_name": "Ngo Van G", "status": "delivered", "time": "2026-09-11 16:20", "money": 780000},
+#     "ORD008": {"guest_name": "Do Thi H", "status": "pending", "time": "2026-09-14 12:00", "money": 210000},
+#     "ORD009": {"guest_name": "Bui Van I", "status": "processing", "time": "2026-09-14 07:10", "money": 340000},
+#     "ORD010": {"guest_name": "Dang Thi K", "status": "shipped", "time": "2026-09-13 10:30", "money": 890000},
+#     "ORD011": {"guest_name": "Ton Van L", "status": "pending", "time": "2026-09-14 12:30", "money": 115000},
+#     "ORD012": {"guest_name": "Phan Thi M", "status": "delivered", "time": "2026-09-09 14:00", "money": 400000},
+#     "ORD013": {"guest_name": "Ly Van N", "status": "processing", "time": "2026-09-14 09:45", "money": 280000},
+#     "ORD014": {"guest_name": "Dao Thi O", "status": "shipped", "time": "2026-09-12 11:15", "money": 600000},
+#     "ORD015": {"guest_name": "Truong Van P", "status": "pending", "time": "2026-09-14 12:40", "money": 225000},
+#     "ORD016": {"guest_name": "Trinh Thi Q", "status": "delivered", "time": "2026-09-08 08:00", "money": 150000},
+#     "ORD017": {"guest_name": "Mai Van R", "status": "processing", "time": "2026-09-14 10:05", "money": 199000},
+#     "ORD018": {"guest_name": "Dinh Thi S", "status": "shipped", "time": "2026-09-13 16:50", "money": 275000},
+#     "ORD019": {"guest_name": "Phung Van T", "status": "pending", "time": "2026-09-14 12:45", "money": 310000},
+#     "ORD020": {"guest_name": "Chau Thi U", "status": "delivered", "time": "2026-09-07 19:30", "money": 550000}
+# }
+# app = Flask(__name__)
+# @app.route("/orders/<order_id>", methods = ["DELETE"])
+# def delete_order(order_id):
+#     order = ORDERS.get(order_id)
+#     if order is None:
+#         return {"error" : "Not Found"}, 404
+#     if order["status"] in ("shipped", "delivered"):
+#         return {"error": "Cannot Delete"}, 409
+#     ORDERS.pop(order_id, None)
+#     return "", 204
+# if __name__ == "__main__":
+#     app.run(host="127.0.0.1", port=5000, debug=True)
+
+# Bai 6
+from flask import Flask, jsonify, request
 app = Flask(__name__)
-@app.route("/orders/<order_id>", methods = ["DELETE"])
-def delete_order(order_id):
-    order = ORDERS.get(order_id)
-    if order is None:
-        return {"error" : "Not Found"}, 404
-    if order["status"] in ("shipped", "delivered"):
-        return {"error": "Cannot Delete"}, 409
-    ORDERS.pop(order_id, None)
-    return "", 204
+_next = 1
+STUDENTS = [
+    {"id": 240001, "name": "Pham Tuan Linh", "class": "CS52"},
+    {"id": 240002, "name": "Ngo Thanh Kien", "class": "CS51"},
+    {"id": 240003, "name": "Bui Tuan A", "class": "IT101"},
+    {"id": 240004, "name": "Nguyen Thanh B", "class": "CS51"},
+    {"id": 240005, "name": "Ngo Thi Binh", "class": "IT101"},
+    {"id": 240006, "name": "Ngo Thi A", "class": "CS52"},
+    {"id": 240007, "name": "Nguyen Huu Nam", "class": "CS51"},
+    {"id": 240008, "name": "Nguyen Thi An", "class": "CS52"},
+    {"id": 240009, "name": "Le Duc Linh", "class": "SE100"},
+    {"id": 240010, "name": "Nguyen Thanh Linh", "class": "CS51"},
+    {"id": 240011, "name": "Hoang Huu Binh", "class": "SE100"},
+    {"id": 240012, "name": "Pham Van Long", "class": "CS51"},
+    {"id": 240013, "name": "Dang Ngoc Linh", "class": "CS52"},
+    {"id": 240014, "name": "Bui Van Nam", "class": "CS52"},
+    {"id": 240015, "name": "Pham Quang A", "class": "IT101"},
+    {"id": 240016, "name": "Tran Ngoc Mai", "class": "CS52"},
+    {"id": 240017, "name": "Dang Tuan Long", "class": "SE100"},
+    {"id": 240018, "name": "Le Thu Long", "class": "SE100"},
+    {"id": 240019, "name": "Tran Duc Dung", "class": "IT101"},
+    {"id": 240020, "name": "Bui Tuan Dung", "class": "SE100"},
+    {"id": 240021, "name": "Do Tuan Long", "class": "CS51"},
+    {"id": 240022, "name": "Vu Van Mai", "class": "CS50"},
+    {"id": 240023, "name": "Vu Quang Nam", "class": "CS50"},
+    {"id": 240024, "name": "Do Minh C", "class": "CS52"},
+    {"id": 240025, "name": "Pham Quang Linh", "class": "SE100"},
+    {"id": 240026, "name": "Ngo Thu Lam", "class": "CS52"},
+    {"id": 240027, "name": "Bui Minh C", "class": "SE100"},
+    {"id": 240028, "name": "Do Ngoc Mai", "class": "CS52"},
+    {"id": 240029, "name": "Hoang Thanh Kien", "class": "CS50"},
+    {"id": 240030, "name": "Vu Thu Nam", "class": "CS51"},
+    {"id": 240031, "name": "Nguyen Thu Nam", "class": "CS50"},
+    {"id": 240032, "name": "Pham Tuan Long", "class": "CS50"},
+    {"id": 240033, "name": "Hoang Ngoc Linh", "class": "CS50"},
+    {"id": 240034, "name": "Pham Quang Kien", "class": "SE100"},
+    {"id": 240035, "name": "Bui Van C", "class": "SE100"},
+    {"id": 240036, "name": "Le Thu Chau", "class": "CS51"},
+    {"id": 240037, "name": "Nguyen Ngoc Mai", "class": "CS50"},
+    {"id": 240038, "name": "Pham Thi B", "class": "CS51"},
+    {"id": 240039, "name": "Vu Ngoc Nam", "class": "IT101"},
+    {"id": 240040, "name": "Pham Quang Long", "class": "IT101"},
+    {"id": 240041, "name": "Do Thu Nam", "class": "SE100"},
+    {"id": 240042, "name": "Pham Quang A", "class": "CS51"},
+    {"id": 240043, "name": "Do Thu Binh", "class": "IT101"},
+    {"id": 240044, "name": "Tran Van Kien", "class": "CS50"},
+    {"id": 240045, "name": "Do Thu Linh", "class": "IT101"},
+    {"id": 240046, "name": "Vu Van Lam", "class": "CS50"},
+    {"id": 240047, "name": "Do Ngoc Mai", "class": "CS50"},
+    {"id": 240048, "name": "Le Huu Binh", "class": "SE100"},
+    {"id": 240049, "name": "Do Tuan B", "class": "CS52"},
+    {"id": 240050, "name": "Do Huu C", "class": "IT101"},
+    {"id": 240051, "name": "Vu Van Mai", "class": "CS51"},
+    {"id": 240052, "name": "Do Tuan Nam", "class": "CS51"},
+    {"id": 240053, "name": "Dang Huu Mai", "class": "SE100"},
+    {"id": 240054, "name": "Nguyen Minh Nam", "class": "IT101"},
+    {"id": 240055, "name": "Pham Thi A", "class": "IT101"},
+    {"id": 240056, "name": "Ngo Minh A", "class": "CS52"},
+    {"id": 240057, "name": "Dang Thi Kien", "class": "SE100"},
+    {"id": 240058, "name": "Ngo Duc Dung", "class": "CS51"},
+    {"id": 240059, "name": "Pham Duc Binh", "class": "CS50"},
+    {"id": 240060, "name": "Hoang Thanh Anh", "class": "IT101"},
+    {"id": 240061, "name": "Dang Minh Dung", "class": "CS52"},
+    {"id": 240062, "name": "Vu Thanh Linh", "class": "CS50"},
+    {"id": 240063, "name": "Tran Quang Binh", "class": "IT101"},
+    {"id": 240064, "name": "Nguyen Huu Linh", "class": "CS52"},
+    {"id": 240065, "name": "Ngo Thanh B", "class": "CS50"},
+    {"id": 240066, "name": "Bui Thu Linh", "class": "CS52"},
+    {"id": 240067, "name": "Pham Tuan Binh", "class": "SE100"},
+    {"id": 240068, "name": "Vu Tuan B", "class": "CS52"},
+    {"id": 240069, "name": "Le Van C", "class": "CS50"},
+    {"id": 240070, "name": "Nguyen Thu C", "class": "CS52"},
+    {"id": 240071, "name": "Dang Van Anh", "class": "CS51"},
+    {"id": 240072, "name": "Le Van Mai", "class": "SE100"},
+    {"id": 240073, "name": "Vu Quang Nam", "class": "CS50"},
+    {"id": 240074, "name": "Vu Ngoc Linh", "class": "CS51"},
+    {"id": 240075, "name": "Hoang Quang B", "class": "CS50"},
+    {"id": 240076, "name": "Ngo Minh Mai", "class": "SE100"},
+    {"id": 240077, "name": "Tran Huu A", "class": "CS51"},
+    {"id": 240078, "name": "Le Duc Binh", "class": "CS52"},
+    {"id": 240079, "name": "Bui Quang Anh", "class": "CS52"},
+    {"id": 240080, "name": "Nguyen Van Long", "class": "CS50"},
+    {"id": 240081, "name": "Le Van An", "class": "CS51"},
+    {"id": 240082, "name": "Do Van A", "class": "SE100"},
+    {"id": 240083, "name": "Ngo Van An", "class": "CS51"},
+    {"id": 240084, "name": "Tran Minh Linh", "class": "CS50"},
+    {"id": 240085, "name": "Le Thu C", "class": "CS52"},
+    {"id": 240086, "name": "Dang Thanh Kien", "class": "CS52"},
+    {"id": 240087, "name": "Do Van An", "class": "CS52"},
+    {"id": 240088, "name": "Hoang Huu Anh", "class": "CS50"},
+    {"id": 240089, "name": "Pham Tuan Linh", "class": "CS50"},
+    {"id": 240090, "name": "Hoang Ngoc Nam", "class": "SE100"},
+    {"id": 240091, "name": "Ngo Thi Binh", "class": "IT101"},
+    {"id": 240092, "name": "Vu Thu Dung", "class": "CS52"},
+    {"id": 240093, "name": "Ngo Quang Nam", "class": "IT101"},
+    {"id": 240094, "name": "Bui Tuan Lam", "class": "CS50"},
+    {"id": 240095, "name": "Dang Thanh Mai", "class": "CS52"},
+    {"id": 240096, "name": "Do Thanh B", "class": "IT101"},
+    {"id": 240097, "name": "Dang Duc Nam", "class": "CS50"},
+    {"id": 240098, "name": "Do Tuan A", "class": "CS51"},
+    {"id": 240099, "name": "Tran Tuan Kien", "class": "CS51"},
+    {"id": 240100, "name": "Nguyen Thu B", "class": "SE100"},
+    {"id": 240101, "name": "Vu Quang C", "class": "CS52"},
+    {"id": 240102, "name": "Tran Van Long", "class": "CS51"},
+    {"id": 240103, "name": "Le Ngoc An", "class": "CS51"},
+    {"id": 240104, "name": "Le Thu Binh", "class": "CS50"},
+    {"id": 240105, "name": "Pham Ngoc A", "class": "CS50"},
+    {"id": 240106, "name": "Pham Quang Long", "class": "CS52"},
+    {"id": 240107, "name": "Tran Ngoc Chau", "class": "SE100"},
+    {"id": 240108, "name": "Vu Thu A", "class": "CS50"},
+    {"id": 240109, "name": "Le Thu Nam", "class": "SE100"},
+    {"id": 240110, "name": "Nguyen Quang C", "class": "CS50"},
+    {"id": 240111, "name": "Nguyen Thi Anh", "class": "SE100"},
+    {"id": 240112, "name": "Vu Minh Mai", "class": "CS50"},
+    {"id": 240113, "name": "Dang Quang Chau", "class": "IT101"},
+    {"id": 240114, "name": "Nguyen Minh Anh", "class": "IT101"},
+    {"id": 240115, "name": "Le Thanh An", "class": "CS52"},
+    {"id": 240116, "name": "Do Van Binh", "class": "IT101"},
+    {"id": 240117, "name": "Bui Tuan Linh", "class": "CS52"},
+    {"id": 240118, "name": "Hoang Thanh Dung", "class": "CS52"},
+    {"id": 240119, "name": "Do Thanh Anh", "class": "SE100"},
+    {"id": 240120, "name": "Le Minh Kien", "class": "IT101"},
+    {"id": 240121, "name": "Vu Quang Anh", "class": "CS50"},
+    {"id": 240122, "name": "Le Ngoc Chau", "class": "SE100"},
+    {"id": 240123, "name": "Ngo Thu C", "class": "CS52"},
+    {"id": 240124, "name": "Dang Huu A", "class": "IT101"},
+    {"id": 240125, "name": "Do Ngoc Binh", "class": "CS51"},
+    {"id": 240126, "name": "Nguyen Ngoc Anh", "class": "CS52"},
+    {"id": 240127, "name": "Do Van Lam", "class": "CS52"},
+    {"id": 240128, "name": "Ngo Tuan Mai", "class": "IT101"},
+    {"id": 240129, "name": "Vu Duc B", "class": "SE100"},
+    {"id": 240130, "name": "Pham Minh Binh", "class": "IT101"},
+    {"id": 240131, "name": "Do Thi Nam", "class": "IT101"},
+    {"id": 240132, "name": "Bui Thi Kien", "class": "CS50"},
+    {"id": 240133, "name": "Ngo Van Mai", "class": "SE100"},
+    {"id": 240134, "name": "Pham Thi B", "class": "SE100"},
+    {"id": 240135, "name": "Pham Ngoc Long", "class": "CS51"},
+    {"id": 240136, "name": "Do Van An", "class": "SE100"},
+    {"id": 240137, "name": "Nguyen Ngoc Kien", "class": "CS52"},
+    {"id": 240138, "name": "Ngo Thanh Linh", "class": "CS51"},
+    {"id": 240139, "name": "Pham Duc A", "class": "IT101"},
+    {"id": 240140, "name": "Bui Huu Lam", "class": "SE100"},
+    {"id": 240141, "name": "Pham Quang Chau", "class": "CS50"},
+    {"id": 240142, "name": "Bui Duc C", "class": "CS50"},
+    {"id": 240143, "name": "Ngo Van Chau", "class": "SE100"},
+    {"id": 240144, "name": "Bui Thi Kien", "class": "IT101"},
+    {"id": 240145, "name": "Nguyen Quang B", "class": "CS50"},
+    {"id": 240146, "name": "Nguyen Thu Anh", "class": "SE100"},
+    {"id": 240147, "name": "Do Ngoc Long", "class": "CS52"},
+    {"id": 240148, "name": "Nguyen Tuan B", "class": "SE100"},
+    {"id": 240149, "name": "Pham Tuan An", "class": "CS51"},
+    {"id": 240150, "name": "Dang Ngoc Long", "class": "IT101"},
+    {"id": 240151, "name": "Dang Thanh Chau", "class": "CS52"},
+    {"id": 240152, "name": "Tran Ngoc Chau", "class": "CS50"},
+    {"id": 240153, "name": "Pham Thu Kien", "class": "SE100"},
+    {"id": 240154, "name": "Tran Huu An", "class": "CS51"},
+    {"id": 240155, "name": "Pham Thu An", "class": "SE100"},
+    {"id": 240156, "name": "Le Ngoc An", "class": "IT101"},
+    {"id": 240157, "name": "Ngo Duc Binh", "class": "IT101"},
+    {"id": 240158, "name": "Tran Thi B", "class": "CS50"},
+    {"id": 240159, "name": "Hoang Tuan Long", "class": "CS52"},
+    {"id": 240160, "name": "Dang Ngoc Anh", "class": "CS52"},
+    {"id": 240161, "name": "Hoang Duc Lam", "class": "SE100"},
+    {"id": 240162, "name": "Bui Van Long", "class": "IT101"},
+    {"id": 240163, "name": "Hoang Thu Long", "class": "CS52"},
+    {"id": 240164, "name": "Bui Van Kien", "class": "CS52"},
+    {"id": 240165, "name": "Pham Huu Linh", "class": "SE100"},
+    {"id": 240166, "name": "Vu Huu Nam", "class": "IT101"},
+    {"id": 240167, "name": "Vu Van Anh", "class": "SE100"},
+    {"id": 240168, "name": "Hoang Thu Dung", "class": "CS52"},
+    {"id": 240169, "name": "Do Van Chau", "class": "IT101"},
+    {"id": 240170, "name": "Tran Thi Linh", "class": "CS51"},
+    {"id": 240171, "name": "Pham Tuan An", "class": "CS50"},
+    {"id": 240172, "name": "Hoang Ngoc Lam", "class": "IT101"},
+    {"id": 240173, "name": "Hoang Duc C", "class": "CS50"},
+    {"id": 240174, "name": "Dang Thi Long", "class": "CS51"},
+    {"id": 240175, "name": "Nguyen Minh Lam", "class": "CS52"},
+    {"id": 240176, "name": "Nguyen Thanh Dung", "class": "IT101"},
+    {"id": 240177, "name": "Vu Thanh Lam", "class": "CS52"},
+    {"id": 240178, "name": "Pham Ngoc Linh", "class": "SE100"},
+    {"id": 240179, "name": "Do Quang Mai", "class": "CS52"},
+    {"id": 240180, "name": "Le Tuan Long", "class": "CS52"},
+    {"id": 240181, "name": "Nguyen Van Kien", "class": "CS51"},
+    {"id": 240182, "name": "Tran Thanh Mai", "class": "CS51"},
+    {"id": 240183, "name": "Pham Quang An", "class": "CS51"},
+    {"id": 240184, "name": "Ngo Quang A", "class": "CS52"},
+    {"id": 240185, "name": "Hoang Thu Nam", "class": "IT101"},
+    {"id": 240186, "name": "Dang Ngoc Linh", "class": "CS50"},
+    {"id": 240187, "name": "Ngo Huu Lam", "class": "CS50"},
+    {"id": 240188, "name": "Bui Van Anh", "class": "SE100"},
+    {"id": 240189, "name": "Pham Thanh Chau", "class": "SE100"},
+    {"id": 240190, "name": "Nguyen Thi Kien", "class": "IT101"},
+    {"id": 240191, "name": "Bui Van A", "class": "IT101"},
+    {"id": 240192, "name": "Hoang Tuan B", "class": "SE100"},
+    {"id": 240193, "name": "Ngo Thi Linh", "class": "SE100"},
+    {"id": 240194, "name": "Tran Minh Binh", "class": "CS51"},
+    {"id": 240195, "name": "Vu Tuan Chau", "class": "CS51"},
+    {"id": 240196, "name": "Dang Ngoc Long", "class": "CS50"},
+    {"id": 240197, "name": "Le Huu Linh", "class": "CS52"},
+    {"id": 240198, "name": "Hoang Quang Mai", "class": "CS51"},
+    {"id": 240199, "name": "Dang Van Long", "class": "CS50"},
+    {"id": 240200, "name": "Nguyen Thanh Anh", "class": "IT101"},
+]
+
+def find(sid):
+    return next((s for s in STUDENTS if s["id"] == sid), None)
+
+@app.route("/students", methods=["GET"])
+def list_students():
+    limit = int(request.args.get("limit", 100))
+    return jsonify(STUDENTS[:limit]), 200
+
+@app.route("/students/<int:sid>", methods=["GET"])
+def get_s(sid):
+    student = find(sid)
+    if not student:
+        return {"Error" : "Not Found"}, 404
+    return jsonify(student), 200
+
+@app.route("/students", methods=["POST"])
+def insert_student():
+    global _next
+    body = request.get_json(silent=True) or {}
+    n, c = body.get("name"), body.get("class")
+    if not n or not c:
+        return {"error": "need name+class"}, 400
+    student = {"id": _next, "name": n, "class": c}
+    _next += 1; STUDENTS.append(student)
+    return jsonify(student), 201, {"Location":f"/students/{student['id']}"}
+
+@app.route("/students/<int:sid>", methods=["PUT", "DELETE"])
+def modify_s(sid):
+    student = find(sid)
+    if not student: 
+        return {"error":"not found"}, 404
+    if request.method == "PUT":
+        student.update(request.get_json(silent=True) or {})
+        return jsonify(student), 200
+    STUDENTS.remove(student)
+    return"" , 204
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True )
+
