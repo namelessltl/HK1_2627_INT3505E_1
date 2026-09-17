@@ -457,34 +457,40 @@
 
 from flask import Flask, jsonify, request, make_response
 app = Flask(__name__)
- BOOKS = [
-    {"id": "z2a3b4", "title": "bro jump", "price": 150, "item_id" : 20},
-    {"id": "1a2b3c", "title": "trust me bro", "price": 200, "item_id" : 1},
-    {"id": "c2b31a", "title": "atomic bro", "price": 300, "item_id" : 2},
-    {"id": "cccmmb", "title": "Top 100 anime op", "price": 100, "item_id" : 3},
-    {"id": "d4e5f6", "title": "Pygame Mastery", "price": 250, "item_id" : 4},
-    {"id": "g7h8i9", "title": "Tử Vi Đẩu Số Toàn Thư", "price": 450, "item_id" : 5},
-    {"id": "j0k1l2", "title": "IELTS Writing Task 2", "price": 150, "item_id" : 6},
-    {"id": "m3n4o5", "title": "Hiragana for Beginners", "price": 120, "item_id" : 7},
-    {"id": "p6q7r8", "title": "MIPS & Java Fundamentals", "price": 350, "item_id" : 8},
-    {"id": "s9t0u1", "title": "Flask API Design not for this bro", "price": 280, "item_id" : 9},
-    {"id": "v2w3x4", "title": "The Tarot Guide", "price": 180, "item_id" : 10},
-    {"id": "y5z6a7", "title": "Leg Day: The Hack Squat", "price": 110, "item_id" : 11},
-    {"id": "b8c9d0", "title": "IEM Acoustic Signatures", "price": 400, "item_id" : 12},
-    {"id": "e1f2g3", "title": "RimWorld Modding 101", "price": 220, "item_id" : 13},
-    {"id": "h4i5j6", "title": "Relational Schemas Explained", "price": 310, "item_id" : 14},
-    {"id": "k7l8m9", "title": "A* and Beyond: AI Search", "price": 380, "item_id" : 15},
-    {"id": "n0o1p2", "title": "Clean Architecture in Python", "price": 420, "item_id" : 16},
-    {"id": "q3r4s5", "title": "Kinh Dịch Lược Giải", "price": 260, "item_id" : 17},
-    {"id": "t6u7v8", "title": "Software Design Patterns for bro", "price": 330, "item_id" : 18},
-    {"id": "w9x0y1", "title": "Dijkstra's Path", "price": 190, "item_id" : 19},
-    
-]
+BOOKS = []
+
+
+_next_id = 1
+# ─── GET /books —— trả danh sách
+@app.get("/books")
+def list_books():
+    return jsonify({"data": BOOKS,"total": len(BOOKS)}), 200
+# ─── POST /books —— tạo mới
+@app.post("/books")
+def create_book():
+    global _next_id
+    if not request.is_json:
+        return jsonify(error="expected JSON"), 415
+    p = request.get_json(silent=True)
+    if p is None:
+        return jsonify(error="JSON is required"), 400
+    if not isinstance(p, dict):
+        return jsonify(error="wrong is required"), 400
+    t = (p.get("title") or"").strip()
+    a = (p.get("author") or"").strip()
+    if not t or not a:
+        return jsonify(error="title and author required"), 422
+    book = {"id": _next_id, "title": t, "author": a}
+    BOOKS.append(book); _next_id += 1
+    resp = make_response(jsonify(book), 201)
+    resp.headers["Location"] = f"/books/{book['id']}"
+    return resp
 
 @app.get("/books/<int:bid>")
 def fetch(bid):
     i = next((k for k,b in enumerate(BOOKS) if b["id"]==bid), None)
-    if i is None: return jsonify(error="not found"), 404
+    if i is None: 
+        return jsonify(error="not found"), 404
     resp = make_response(jsonify(BOOKS[i]), 200)
     resp.headers["Cache-Control"]="max-age=60"; return resp
 # ─── PUT ─── thay toàn bộ, title+author bắt buộc
