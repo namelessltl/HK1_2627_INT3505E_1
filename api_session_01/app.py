@@ -475,7 +475,7 @@ def create_book():
     if p is None:
         return jsonify(error="JSON is required"), 400
     if not isinstance(p, dict):
-        return jsonify(error="wrong is required"), 400
+        return jsonify(error="JSON body must be object"), 400
     t = (p.get("title") or"").strip()
     a = (p.get("author") or"").strip()
     if not t or not a:
@@ -496,16 +496,19 @@ def fetch(bid):
 # ─── PUT ─── thay toàn bộ, title+author bắt buộc
 @app.put("/books/<int:bid>")
 def put(bid):
-    i = next((k for k,b in enumerate(BOOKS) if b["id"]==bid), None)
-    if i is None: 
-        return jsonify(error="not found"), 404
     p = request.get_json(silent=True) or {}
     t,a = p.get("title"), p.get("author")
     if not t or not a: 
         return jsonify(error="need title+author"), 422
-    BOOKS[i]={"id":bid,"title":t.strip(),"author":a.strip(),
-    "isbn":p.get("isbn"),"price":p.get("price")}
-    return jsonify(BOOKS[i]), 200
+    i = next((k for k,b in enumerate(BOOKS) if b["id"]==bid), None)
+    new_book = {"id":bid,"title":t.strip(),"author":a.strip(),
+              "isbn":p.get("isbn"),"price":p.get("price")}
+    if i is None:
+        BOOKS.append(new_book)
+        return jsonify(new_book), 201
+    else:
+        BOOKS[i] = new_book
+        return jsonify(BOOKS[i]), 200
     # ─── PATCH ─── chỉ cập nhật field có trong body
 @app.patch("/books/<int:bid>")
 def patch(bid):
