@@ -191,7 +191,6 @@
 # conn = sqlite3.connect("database.db")
 # cur = conn.cursor()
 
-# # Tạo bảng books
 # cur.execute("""
 # CREATE TABLE IF NOT EXISTS books (
 #     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -200,7 +199,6 @@
 # )
 # """)
 
-# # Tạo bảng orders
 # cur.execute("""
 # CREATE TABLE IF NOT EXISTS orders (
 #     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -210,7 +208,6 @@
 # )
 # """)
 
-# # Chèn dữ liệu mẫu
 # cur.executemany("INSERT INTO books (title, author) VALUES (?, ?)", [
 #     ("Clean Code", "Robert C. Martin"),
 #     ("Clean Architecture", "Robert C. Martin"),
@@ -307,7 +304,7 @@ def list_books():
     resp.headers["Cache-Control"] = "public, max-age=30"
     return resp
 
-# Bổ sung GET /orders/<oid> theo yêu cầu đề bài
+
 @app.get("/orders/<int:oid>")
 def get_order(oid):
     conn = get_db_connection()
