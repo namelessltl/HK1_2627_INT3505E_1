@@ -35,3 +35,16 @@
 -Bài 3  curl /books?q=clean&page=1&size=1
 
 ![W2 Bai 3 5](<W2 Bai 3 5.png>)
+
+-assigment 1 
+![](<a 1.png>)
+
+-assigment 3
+
+client
+
+![](<a 3 client.png>)
+
+server
+
+![](<a 3 server.png>)

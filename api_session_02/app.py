@@ -225,103 +225,155 @@
 # conn.close()
 # print("Khởi tạo database thành công!")
 
+#a 1
+# import sqlite3
+# from flask import Flask, jsonify, request, make_response
 
+# app = Flask(__name__)
+# DEFAULT_SIZE, MAX_SIZE = 20, 100
+
+# def get_db_connection():
+#     conn = sqlite3.connect("database.db")
+#     conn.row_factory = sqlite3.Row  # Trả về dạng dict-like thay vì tuple
+#     return conn
+
+# # Endpoint GET /books với SQLite
+# @app.get("/books")
+# def list_books():
+#     try:
+#         page = int(request.args.get("page", 1))
+#         size = int(request.args.get("size", DEFAULT_SIZE))
+#     except ValueError:
+#         return jsonify(error="page and size must be int"), 400
+
+#     page = max(page, 1)
+#     size = max(min(size, MAX_SIZE), 1)
+
+#     author = request.args.get("author")
+#     q = request.args.get("q")
+
+#     conn = get_db_connection()
+#     cur = conn.cursor()
+
+#     # Xây dựng câu truy vấn động theo filter
+#     where_clauses = []
+#     params = []
+#     if author:
+#         where_clauses.append("LOWER(author) = LOWER(?)")
+#         params.append(author)
+#     if q:
+#         where_clauses.append("LOWER(title) LIKE LOWER(?)")
+#         params.append(f"%{q}%")
+
+#     where_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+
+#     # 1. Đếm tổng số bản ghi
+#     total = cur.execute(f"SELECT COUNT(*) FROM books{where_sql}", params).fetchone()[0]
+
+#     # 2. Lấy dữ liệu theo LIMIT và OFFSET (Phân trang ở tầng DB)
+#     offset = (page - 1) * size
+#     query_sql = f"SELECT id, title, author FROM books{where_sql} LIMIT ? OFFSET ?"
+#     rows = cur.execute(query_sql, params + [size, offset]).fetchall()
+#     items = [dict(row) for row in rows]
+#     conn.close()
+
+#     last = (total + size - 1) // size if total > 0 else 1
+
+#     # Tạo HATEOAS links
+#     filter_params = ""
+#     if author: filter_params += f"&author={author}"
+#     if q: filter_params += f"&q={q}"
+
+#     def u(p): return f"/books?page={p}&size={size}{filter_params}"
+
+#     links = {
+#         "self": {"href": u(page)},
+#         "first": {"href": u(1)},
+#         "last": {"href": u(max(last, 1))}
+#     }
+#     if page > 1: links["prev"] = {"href": u(page - 1)}
+#     if offset + size < total: links["next"] = {"href": u(page + 1)}
+
+#     body = {
+#         "data": items,
+#         "pagination": {"page": page, "size": size, "total": total, "total_pages": last},
+#         "_links": links
+#     }
+
+#     resp = make_response(jsonify(body), 200)
+#     resp.headers["Cache-Control"] = "public, max-age=30"
+#     return resp
+
+
+# @app.get("/orders/<int:oid>")
+# def get_order(oid):
+#     conn = get_db_connection()
+#     order = conn.execute("SELECT * FROM orders WHERE id = ?", (oid,)).fetchone()
+#     conn.close()
+
+#     if order is None:
+#         return jsonify(error=f"Order {oid} not found"), 404
+
+#     order_dict = dict(order)
+#     return jsonify({
+#         "data": order_dict,
+#         "_links": {
+#             "self": {"href": f"/orders/{oid}"},
+#             "collection": {"href": "/orders"}
+#         }
+#     }), 200
+
+# if __name__ == "__main__":
+#     app.run(host="127.0.0.1", port=5000, debug=True)
+
+
+#a 3
+import hashlib
+import json
 import sqlite3
 from flask import Flask, jsonify, request, make_response
 
 app = Flask(__name__)
-DEFAULT_SIZE, MAX_SIZE = 20, 100
 
 def get_db_connection():
     conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row  # Trả về dạng dict-like thay vì tuple
+    conn.row_factory = sqlite3.Row
     return conn
 
-# Endpoint GET /books với SQLite
-@app.get("/books")
-def list_books():
-    try:
-        page = int(request.args.get("page", 1))
-        size = int(request.args.get("size", DEFAULT_SIZE))
-    except ValueError:
-        return jsonify(error="page and size must be int"), 400
+def generate_etag(data_dict):
+    """Băm chuỗi JSON đại diện cho dữ liệu để tạo ETag"""
+    encoded_str = json.dumps(data_dict, sort_keys=True).encode("utf-8")
+    return f'"{hashlib.md5(encoded_str).hexdigest()}"'
 
-    page = max(page, 1)
-    size = max(min(size, MAX_SIZE), 1)
-
-    author = request.args.get("author")
-    q = request.args.get("q")
-
+@app.get("/books/<int:id>")
+def get_book_by_id(id):
     conn = get_db_connection()
-    cur = conn.cursor()
-
-    # Xây dựng câu truy vấn động theo filter
-    where_clauses = []
-    params = []
-    if author:
-        where_clauses.append("LOWER(author) = LOWER(?)")
-        params.append(author)
-    if q:
-        where_clauses.append("LOWER(title) LIKE LOWER(?)")
-        params.append(f"%{q}%")
-
-    where_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-
-    # 1. Đếm tổng số bản ghi
-    total = cur.execute(f"SELECT COUNT(*) FROM books{where_sql}", params).fetchone()[0]
-
-    # 2. Lấy dữ liệu theo LIMIT và OFFSET (Phân trang ở tầng DB)
-    offset = (page - 1) * size
-    query_sql = f"SELECT id, title, author FROM books{where_sql} LIMIT ? OFFSET ?"
-    rows = cur.execute(query_sql, params + [size, offset]).fetchall()
-    items = [dict(row) for row in rows]
+    row = conn.execute("SELECT id, title, author FROM books WHERE id = ?", (id,)).fetchone()
     conn.close()
 
-    last = (total + size - 1) // size if total > 0 else 1
+    if row is None:
+        return jsonify(error="Book not found"), 404
 
-    # Tạo HATEOAS links
-    filter_params = ""
-    if author: filter_params += f"&author={author}"
-    if q: filter_params += f"&q={q}"
+    book_data = dict(row)
 
-    def u(p): return f"/books?page={p}&size={size}{filter_params}"
+    current_etag = generate_etag(book_data)
 
-    links = {
-        "self": {"href": u(page)},
-        "first": {"href": u(1)},
-        "last": {"href": u(max(last, 1))}
-    }
-    if page > 1: links["prev"] = {"href": u(page - 1)}
-    if offset + size < total: links["next"] = {"href": u(page + 1)}
+    client_etag = request.headers.get("If-None-Match")
+    if client_etag and client_etag == current_etag:
+        resp = make_response("", 304)
+        resp.headers["ETag"] = current_etag
+        return resp
 
     body = {
-        "data": items,
-        "pagination": {"page": page, "size": size, "total": total, "total_pages": last},
-        "_links": links
-    }
-
-    resp = make_response(jsonify(body), 200)
-    resp.headers["Cache-Control"] = "public, max-age=30"
-    return resp
-
-
-@app.get("/orders/<int:oid>")
-def get_order(oid):
-    conn = get_db_connection()
-    order = conn.execute("SELECT * FROM orders WHERE id = ?", (oid,)).fetchone()
-    conn.close()
-
-    if order is None:
-        return jsonify(error=f"Order {oid} not found"), 404
-
-    order_dict = dict(order)
-    return jsonify({
-        "data": order_dict,
+        "data": book_data,
         "_links": {
-            "self": {"href": f"/orders/{oid}"},
-            "collection": {"href": "/orders"}
+            "self": {"href": f"/books/{id}"},
+            "collection": {"href": "/books"}
         }
-    }), 200
+    }
+    resp = make_response(jsonify(body), 200)
+    resp.headers["ETag"] = current_etag
+    return resp
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
