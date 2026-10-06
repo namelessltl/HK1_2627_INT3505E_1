@@ -7,3 +7,8 @@
 ![](<tree endpoint.jpg>)
 version segment: v1. ex: /api/v1/users/post?user_id=[id]
 4.
+
+POST 
+![](<POST.png>)<br>
+GET
+![](<curl.png>)
