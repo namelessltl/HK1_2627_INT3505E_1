@@ -1,0 +1,238 @@
+openapi: 3.0.3
+
+info:
+  title: Students API
+  version: 1.0.0
+
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/uet-4aa/StudentsAPI/1.0.0
+  - url: http://localhost:5000/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /students:
+    get:
+      operationId: listStudents
+      parameters:
+        - $ref: '#/components/parameters/PageLimit'
+        - $ref: '#/components/parameters/ClassFilter'
+      responses:
+        '200':
+          description: Danh sách sinh viên
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Student'
+              example:
+                - id: 1
+                  name: Nguyễn Văn An
+                  className: K69
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    post:
+      operationId: createStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudent'
+            example:
+              name: Nguyễn Văn An
+              className: K69
+      responses:
+        '201':
+          $ref: '#/components/responses/StudentResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /students/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+
+    get:
+      operationId: getStudent
+      responses:
+        '200':
+          $ref: '#/components/responses/StudentResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    patch:
+      operationId: updateStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStudent'
+            example:
+              className: K70
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+              example:
+                id: 1
+                name: Nguyễn Văn An
+                className: K70
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      operationId: deleteStudent
+      responses:
+        '204':
+          description: Xóa thành công, không có body
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageLimit:
+      name: limit
+      in: query
+      description: Số sinh viên tối đa trả về
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      example: 10
+
+    ClassFilter:
+      name: className
+      in: query
+      description: Lọc sinh viên theo lớp
+      schema:
+        type: string
+      example: K69
+
+  schemas:
+    UpdateStudent:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Nguyễn Văn An
+        className:
+          type: string
+          minLength: 1
+          example: K69
+      example:
+        className: K70
+
+    CreateStudent:
+      allOf:
+        - $ref: '#/components/schemas/UpdateStudent'
+        - type: object
+          required: [name, className]
+      example:
+        name: Nguyễn Văn An
+        className: K69
+
+    Student:
+      type: object
+      required: [id, name, className]
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Nguyễn Văn An
+        className:
+          type: string
+          example: K69
+      example:
+        id: 1
+        name: Nguyễn Văn An
+        className: K69
+
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: Dữ liệu không hợp lệ
+
+  responses:
+    StudentResult:
+      description: Thông tin sinh viên
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Student'
+          example:
+            id: 1
+            name: Nguyễn Văn An
+            className: K69
+
+    Unauthorized:
+      description: Chưa xác thực
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Thiếu token hoặc token không hợp lệ
+
+    NotFound:
+      description: Không tìm thấy sinh viên
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Không tìm thấy sinh viên có ID này
+
+    ValidationError:
+      description: Dữ liệu không hợp lệ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Tham số hoặc dữ liệu gửi lên không hợp lệ
