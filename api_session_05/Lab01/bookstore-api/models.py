@@ -24,7 +24,8 @@ class Book(db.Model):
             "isbn": self.isbn,
             "price_vnd": self.price_vnd,
             "stock": self.stock,
-            "category_id": self.category_id
+            "category": {"id": self.category.id, "slug": self.category.slug} if self.category else None,
+            "authors": [{"id": a.id, "name": a.name} for a in self.authors],
         }
 
 class BookAuthor(db.Model):
