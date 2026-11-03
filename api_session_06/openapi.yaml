@@ -1,0 +1,333 @@
+openapi: 3.0.3
+info:
+  title: Social Network API - Auth & Posts
+  version: 1.0.0
+  description: |
+    Đặc tả minh họa cho bài tập SOA buổi 6: đăng nhập, làm mới token và đọc bài viết.
+
+    Quy ước bảo mật:
+    - Access token là JWT ký bằng RS256, hết hạn sau 15 phút.
+    - Refresh token là chuỗi ngẫu nhiên, lưu ở cookie HttpOnly, Secure, SameSite=Strict;
+      máy chủ lưu dạng băm và thay mới token sau mỗi lần refresh thành công.
+    - GET /posts/{id} cần JWT có scope `posts:read` **và** người dùng được phép xem bài viết.
+    - Vì `bearerAuth` là HTTP Bearer (không phải OAuth2), scope của endpoint được
+      diễn đạt bằng `x-required-scopes` và mô tả. Đây là extension, không phải
+      cơ chế kiểm tra quyền tự động của OpenAPI.
+servers:
+  - url: https://api.example.com/v1
+    description: URL ví dụ; thay bằng server thực tế
+
+tags:
+  - name: Authentication
+    description: Xác thực và quản lý vòng đời token
+  - name: Posts
+    description: Truy cập bài viết theo quyền
+
+paths:
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Đăng nhập bằng email và mật khẩu
+      description: |
+        **Scope yêu cầu:** Không có (endpoint công khai).
+
+        Khi xác thực thành công, server trả access token JWT trong JSON và đặt
+        refresh token bằng cookie. Để chống dò mật khẩu, thông báo lỗi không
+        phân biệt email không tồn tại và mật khẩu sai.
+      operationId: login
+      security: []
+      x-required-scopes: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: user@example.com
+              password: example-password
+      responses:
+        '200':
+          description: Xác thực thành công; cấp access token và cookie refresh token.
+          headers:
+            Set-Cookie:
+              description: |
+                Cookie làm mới phiên; chỉ gửi qua HTTPS, không đọc được bằng
+                JavaScript, chỉ gửi đến /auth/refresh.
+              schema:
+                type: string
+                example: 'refresh_token=<opaque-token>; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=604800'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Email hoặc mật khẩu không đúng.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: INVALID_CREDENTIALS
+                message: Thông tin đăng nhập không hợp lệ.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Làm mới access token và xoay vòng refresh token
+      description: |
+        **Scope yêu cầu:** Không có access-token scope. Client phải gửi
+        cookie `refresh_token` hợp lệ. Server kiểm tra cookie, hạn sử dụng,
+        trạng thái thu hồi và kiểm tra Origin; mỗi lần thành công token cũ
+        bị vô hiệu hóa và cookie mới được cấp. Nếu phát hiện dùng lại refresh
+        token cũ, server thu hồi toàn bộ token của phiên liên quan.
+
+        Phải triển khai HTTPS, SameSite=Strict và kiểm tra Origin để hạn chế CSRF.
+      operationId: refreshAccessToken
+      security:
+        - refreshCookie: []
+      x-required-scopes: []
+      responses:
+        '200':
+          description: Làm mới thành công; refresh token cũ bị thu hồi, cookie mới được đặt.
+          headers:
+            Set-Cookie:
+              description: Refresh token mới thay token cũ.
+              schema:
+                type: string
+                example: 'refresh_token=<new-opaque-token>; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=604800'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Thiếu, hết hạn, không hợp lệ, bị thu hồi hoặc tái sử dụng refresh token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: INVALID_REFRESH_TOKEN
+                message: Phiên đăng nhập đã hết hạn hoặc không hợp lệ.
+        '403':
+          description: Yêu cầu bị từ chối do Origin không hợp lệ (chống CSRF).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: FORBIDDEN_ORIGIN
+                message: Yêu cầu không được phép.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /posts/{id}:
+    get:
+      tags: [Posts]
+      summary: Lấy chi tiết bài viết theo ID
+      description: |
+        **Scope yêu cầu:** `posts:read` trong access token JWT.
+
+        Scope chỉ cho phép *thử* đọc; server vẫn phải kiểm tra chính sách
+        truy cập từng đối tượng: bài public hoặc người xem là tác giả/người
+        được chia sẻ. Trả 404 cho bài không tồn tại hoặc người xem không có
+        quyền nhìn thấy bài đó để hạn chế dò ID.
+      operationId: getPostById
+      security:
+        - bearerAuth: []
+      x-required-scopes:
+        - posts:read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID của bài viết.
+          schema:
+            type: string
+            format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Lấy bài viết thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440000
+                author_id: a1111111-1111-4111-8111-111111111111
+                content: Xin chào mọi người!
+                visibility: public
+                created_at: '2026-11-03T08:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Thiếu access token, hoặc JWT sai chữ ký / hết hạn / sai issuer / audience.
+          headers:
+            WWW-Authenticate:
+              description: Thông báo bearer token không hợp lệ theo RFC 6750.
+              schema:
+                type: string
+                example: 'Bearer error="invalid_token"'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Cần xác thực bằng access token hợp lệ.
+        '403':
+          description: JWT hợp lệ nhưng thiếu scope `posts:read`.
+          headers:
+            WWW-Authenticate:
+              description: Gợi ý scope còn thiếu.
+              schema:
+                type: string
+                example: 'Bearer error="insufficient_scope", scope="posts:read"'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: INSUFFICIENT_SCOPE
+                message: Không đủ quyền truy cập chức năng này.
+        '404':
+          description: Bài viết không tồn tại hoặc bị ẩn đối với người gọi.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: POST_NOT_FOUND
+                message: Không tìm thấy bài viết.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT access token; GET /posts/{id} đòi hỏi claim scope chứa posts:read.'
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+      description: Refresh token gửi tự động bằng cookie HttpOnly/Secure/SameSite=Strict.
+
+  schemas:
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          format: password
+          writeOnly: true
+          minLength: 1
+          description: Mật khẩu thô chỉ dùng khi xác thực; không bao giờ ghi log hoặc lưu dạng thô.
+
+    TokenResponse:
+      type: object
+      additionalProperties: false
+      required: [access_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+          description: JWT đã ký; ví dụ được lược bỏ để tránh nhầm với token thật.
+          example: '<signed-access-jwt>'
+        token_type:
+          type: string
+          enum: [Bearer]
+          example: Bearer
+        expires_in:
+          type: integer
+          minimum: 1
+          description: Thời hạn access token, đơn vị giây.
+          example: 900
+
+    Post:
+      type: object
+      additionalProperties: false
+      required: [id, author_id, content, visibility, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        author_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        visibility:
+          type: string
+          enum: [public, private, shared]
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Mã lỗi ổn định cho ứng dụng phía client.
+        message:
+          type: string
+          description: Thông báo an toàn, không chứa dữ liệu nhạy cảm.
+
+  responses:
+    BadRequest:
+      description: Tham số hoặc JSON không hợp lệ (thiếu trường, sai email, ID không phải UUID...).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: VALIDATION_ERROR
+            message: Dữ liệu đầu vào không hợp lệ.
+
+    TooManyRequests:
+      description: Gửi quá nhiều yêu cầu trong khoảng thời gian ngắn.
+      headers:
+        Retry-After:
+          description: Số giây cần đợi trước khi gửi lại.
+          schema:
+            type: integer
+            minimum: 0
+            example: 60
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: RATE_LIMITED
+            message: Bạn đã gửi quá nhiều yêu cầu. Hãy thử lại sau.
+
+    InternalServerError:
+      description: Lỗi nội bộ; chi tiết không được gửi cho client.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: INTERNAL_ERROR
+            message: Đã xảy ra lỗi máy chủ.
