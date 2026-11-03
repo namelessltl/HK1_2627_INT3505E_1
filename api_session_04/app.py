@@ -14,7 +14,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("students_api")
 
-# Local-development default only. Set JWT_SECRET in the environment in production.
 JWT_SECRET = os.environ.get("JWT_SECRET", "dev-only-secret-change-this-before-deploying-2026")
 
 

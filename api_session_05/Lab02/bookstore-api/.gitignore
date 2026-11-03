@@ -1,3 +1,5 @@
 __pycache__/
 instance/
 routes/__pycache__/
+*.pytest_cache/
+

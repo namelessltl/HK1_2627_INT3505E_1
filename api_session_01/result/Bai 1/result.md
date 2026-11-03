@@ -79,20 +79,3 @@
 
 ![Bài 6 6.POST](<6.POST.png>)
 
-## Week 2
-
--Bài 1 Client
-
-![W2 Bai 1 client](<W2 Bai 1 client.png>)
-
--Bài 1 Server
-
-![W2 Bai 1 client Server](<W2 Bai 1 server.png>)
-
--Bài 2 Client
-
-![W2 Bai 2 client](<W2 Bai 2 client.png>)
-
--Bài 2 Server
-
-![W2 Bai 2 client Server](<W2 Bai 2 server.png>)
