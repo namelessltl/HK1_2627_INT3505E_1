@@ -1,11 +1,13 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from extensions import db
+
+if TYPE_CHECKING:
+    from .order import OrderItem
 
 
 class Product(db.Model):

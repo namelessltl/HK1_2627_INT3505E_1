@@ -5,7 +5,10 @@ from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from extensions import db
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from .product import Product
 
 class Order(db.Model):
     __tablename__ = "orders"
