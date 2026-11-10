@@ -1,9 +1,8 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import NotFound
 
-from ..extensions import db
-from ..models import Product
+from extensions import db
+from models import Product
 from schemas import ProductIn, ProductOut, ProductPatch, ReserveIn
 
 products_bp = Blueprint("products", __name__, url_prefix="/api/v1/products")
