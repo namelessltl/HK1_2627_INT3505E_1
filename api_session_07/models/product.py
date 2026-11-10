@@ -3,8 +3,9 @@ from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..extensions import db
+from extensions import db
 
 
 class Product(db.Model):
@@ -16,6 +17,8 @@ class Product(db.Model):
     description: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)
     price_cents: Mapped[int] = mapped_column(Integer, nullable=False)
     qty_in_stock: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    order_items: Mapped[list["OrderItem"]] = relationship(
+    back_populates="product")
     archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
