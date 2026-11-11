@@ -1,3 +1,7 @@
 kết quả file test
 
-![](<results\image.png>)
+![](<results\1.png>)
+
+kết quả spectral
+
+![](<results\2.png>)
